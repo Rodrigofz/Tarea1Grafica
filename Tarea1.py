@@ -23,12 +23,13 @@ class corte:
         self._ancho = 3430
 
         self._dh = dh
+        self._alturaMar = 100
 
         # Ancho y largo de matriz, en puntos
-        self._x = int(float(self._alto) / dh)
-        self._h = int(float(self._ancho) / dh)
+        self._h = int(float(self._alto) / dh)
+        self._x = int(float(self._ancho) / dh)
 
-        self._matrix = np.ones((self._x, self._h))
+        self._matrix = np.ones((self._h, self._x))
         self.fijarTipoCelda()
 
     def mostrarDim(self):
@@ -56,7 +57,7 @@ class corte:
         # Se agrega grafico al plot
         cax = ax.imshow(self._matrix, interpolation='none')
 
-        #Invertir eje y (https://stackoverflow.com/questions/2051744/reverse-y-axis-in-pyplot)
+        # Invertir eje y (https://stackoverflow.com/questions/2051744/reverse-y-axis-in-pyplot)
         plt.gca().invert_yaxis()
 
         fig.colorbar(cax)
@@ -68,36 +69,36 @@ class corte:
         #Por ahora, solo diferencia piso de agua
         """
         for i in range(0, int(1550 / self._dh)):
-            for j in range(0, self._alto):
-                if j > 0:
+            for j in range(0, self._h):
+                if j > self._alturaMar:
                     self._matrix[j][i] = 4
                 else:
                     self._matrix[j][i] = 1
 
         for i in range(int(1550 / self._dh), int(1830 / self._dh)):
-            for j in range(0, self._alto):
-                if j > (93.0 / 280) * (i - 1550):
+            for j in range(0, self._h):
+                if j > 0.33 * i - 514.82 + self._alturaMar:
                     self._matrix[j][i] = 4
                 else:
                     self._matrix[j][i] = 10
 
         for i in range(int(1830 / self._dh), int(2630 / self._dh)):
-            for j in range(0, self._alto):
-                if j > (1522.0 / 800) * (i - 1830) + 93:
+            for j in range(0, self._h):
+                if j > 1.9 * i - 3388.58 + self._alturaMar:
                     self._matrix[j][i] = 4
                 else:
                     self._matrix[j][i] = 10
 
         for i in range(int(2630. / self._dh), int(2930 / self._dh)):
-            for j in range(0, self._alto):
-                if j > (-2.0 / 3) * (i - 2630) + 1522:
+            for j in range(0, self._h):
+                if j > -0.67 * i + 3368.33 + self._alturaMar:
                     self._matrix[j][i] = 4
                 else:
                     self._matrix[j][i] = 10
 
         for i in range(int(2930 / self._dh), int(3430 / self._dh)):
-            for j in range(0, self._alto):
-                if j > (722.5 / 500) * (i - 2930) + 1415:
+            for j in range(0, self._h):
+                if j > 0.99 * i - 1471.05 + self._alturaMar:
                     self._matrix[j][i] = 4
                 else:
                     self._matrix[j][i] = 10
