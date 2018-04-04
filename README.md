@@ -2,6 +2,6 @@
 Modelo temperatura emitida por planta
 
 TODO:  
--Generalizar para dh != 1  
--Diferenciar todos los tipos de terreno 
+-Generalizar para dh != 1  (Quizas no necesario)
+-tqdm
 
