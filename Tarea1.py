@@ -128,7 +128,7 @@ class corte:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  #### AIRE
                 else:
-                    if j > self._alturaMar + 1800:
+                    if j*self._dh > self._alturaMar + 1800:
                         self._matrix[j][i] = 0  ##### NIEVE
                     else:
                         self._matrix[j][i] = 10  ##### SUELO
@@ -140,25 +140,25 @@ class corte:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  ##### AIRE
                 else:
-                    if j > self._alturaMar + 1800:
+                    if j*self._dh > self._alturaMar + 1800:
                         self._matrix[j][i] = 0  ##### NIEVE
                     else:
                         self._matrix[j][i] = 10  ##### SUELO
 
     def iterar(self):
-        for _ in tqdm.tqdm(range(100)):
+        for _ in tqdm.tqdm(range(1000)):
             for i in range(1, self._x-1):
                 for j in range(1, self._h-1):
                     if self._matrixTipos[j][i] == -1:
-                        self._matrix[j][i] =  self._matrix[j][i] + self._omega * (
+                        self._matrix[j][i] =  self._matrix[j][i] + self._omega * 0.25 * (
                                 self._matrix[j][i - 1] + self._matrix[j][i + 1] + self._matrix[j - 1][i] +
-                                self._matrix[j + 1][i])
+                                self._matrix[j + 1][i] - 4*self._matrix[j][i])
 
 
 
 
 
-c = corte(2, 22)
+c = corte(20, 22)
 print len(c._matrixTipos)
 c.iterar()
 c.plot()
