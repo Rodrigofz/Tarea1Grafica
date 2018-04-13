@@ -22,15 +22,17 @@ class corte:
         self._T = T
 
         # Omega
-        self._omega = 1.5
+        self._omega = 1
 
         # Ancho y largo de matriz, en puntos
         self._h = int(float(self._alto) / dh)
         self._x = int(float(self._ancho) / dh)
 
         self._matrix = np.ones((self._h, self._x))
-        self._matrixTipos = np.ones((self._h,self._x))
+        self._matrixTipos = np.ones((self._h, self._x))
         self.fijarCondicionesBorde()
+
+        self._rho = lambda x, y: 1 / math.sqrt(x ** 2 + y ** 2 + 120)
 
     def plot(self):
         """
@@ -42,7 +44,7 @@ class corte:
         ax = fig.add_subplot(111)
 
         # Se agrega grafico al plot
-        cax = ax.imshow(self._matrix, interpolation='none')
+        cax = ax.imshow(self._matrix, interpolation='none', vmax=100)
 
         # Invertir eje y (https://stackoverflow.com/questions/2051744/reverse-y-axis-in-pyplot)
         plt.gca().invert_yaxis()
@@ -69,10 +71,10 @@ class corte:
 
         self.primeraColumna()
 
-        #Mar
+        # Mar
         for i in range(0, int(1430 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > self._alturaMar:
+                if j * self._dh > self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  #### AIRE
                 else:
@@ -88,7 +90,7 @@ class corte:
         # Chimeneas
         for i in range(int(1430 / self._dh), int(1550 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > self._alturaMar:
+                if j * self._dh > self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  #### AIRE
                 else:
@@ -97,63 +99,62 @@ class corte:
         # Tramo 2, arriba: Aire; #abajo: Terreno;
         for i in range(int(1550 / self._dh), int(1830 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > 0.33 * i*self._dh - 514.82 + self._alturaMar:
+                if j * self._dh > 0.33 * i * self._dh - 514.82 + self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  ##### AIRE
                 else:
-                    self._matrix[j][i] = 10  #### SUELO
+                    self._matrix[j][i] = 20  #### SUELO
 
         # Primera montana
         for i in range(int(1830 / self._dh), int(2630 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > 1.9 * i*self._dh - 3388.58 + self._alturaMar:
+                if j * self._dh > 1.9 * i * self._dh - 3388.58 + self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  ##### AIRE
                 else:
-                    self._matrix[j][i] = 10  ##### SUELO
+                    self._matrix[j][i] = 20  ##### SUELO
 
         # Primera montana
         for i in range(int(2630. / self._dh), int(2930 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > -0.67 * i*self._dh + 3368.33 + self._alturaMar:
+                if j * self._dh > -0.67 * i * self._dh + 3368.33 + self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  ##### AIRE
                 else:
-                    self._matrix[j][i] = 10  ##### SUELO
+                    self._matrix[j][i] = 20  ##### SUELO
 
         # Segunda montana
         for i in range(int(2930 / self._dh), int(3430 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > 0.99 * i*self._dh - 1471.05 + self._alturaMar:
+                if j * self._dh > 0.99 * i * self._dh - 1471.05 + self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  #### AIRE
                 else:
-                    if j*self._dh > self._alturaMar + 1800:
+                    if j * self._dh > self._alturaMar + 1800:
                         self._matrix[j][i] = 0  ##### NIEVE
                     else:
-                        self._matrix[j][i] = 10  ##### SUELO
+                        self._matrix[j][i] = 20  ##### SUELO
 
         # Segunda montana
         for i in range(int(3430 / self._dh), int(4000 / self._dh)):
             for j in range(0, self._h):
-                if j*self._dh > -0.95 * i*self._dh + 0.95 * 3430 + 1909.5 + self._alturaMar:
+                if j * self._dh > -0.95 * i * self._dh + 0.95 * 3430 + 1909.5 + self._alturaMar:
                     self._matrixTipos[j][i] = -1
                     self._matrix[j][i] = self._matrix[j][0]  ##### AIRE
                 else:
-                    if j*self._dh > self._alturaMar + 1800:
+                    if j * self._dh > self._alturaMar + 1800:
                         self._matrix[j][i] = 0  ##### NIEVE
                     else:
-                        self._matrix[j][i] = 10  ##### SUELO
+                        self._matrix[j][i] = 20  ##### SUELO
 
     def iterar(self):
         for _ in tqdm.tqdm(range(1000)):
-            for i in range(1, self._x-1):
-                for j in range(1, self._h-1):
+            for i in range(1, self._x - 1):
+                for j in range(1, self._h - 1):
                     if self._matrixTipos[j][i] == -1:
-                        self._matrix[j][i] =  self._matrix[j][i] + self._omega * 0.25 * (
-                                self._matrix[j][i - 1] + self._matrix[j][i + 1] + self._matrix[j - 1][i] +
-                                self._matrix[j + 1][i] - 4*self._matrix[j][i])
-
+                        self._matrix[j][i] =  self._omega * 0.25 * (
+                                    self._matrix[j - 1][i] + self._matrix[j + 1][i] + self._matrix[j][i + 1] +
+                                    self._matrix[j][i - 1]  - self._dh ** 2 * self._rho(i,j))
 
 
 
@@ -162,4 +163,3 @@ c = corte(20, 22)
 print len(c._matrixTipos)
 c.iterar()
 c.plot()
-
