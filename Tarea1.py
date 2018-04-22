@@ -9,60 +9,52 @@ import numpy as np
 import math
 
 
-class corte:
-    def __init__(self, dh, T=0):
-        # Ancho y largo de corte en metros
-        self._alto = 2500
-        self._ancho = 4000
-
+class Corte:
+    ##### CONSTRUCTOR
+    def __init__(self, dh, T=0, usarRho=False, omega=0, tol=1):
         self._dh = dh
         self._alturaMar = 100
+
+        # Ancho y largo de corte en metros
+        self._alto = 2000 + self._alturaMar
+        self._ancho = 4000
 
         # Hora del dia
         self._T = T
 
-        self.tol = 1
+        # Tolerancia
+        self.tol = tol
 
         # Ancho y largo de matriz, en puntos
         self._h = int(float(self._alto) / dh)
         self._x = int(float(self._ancho) / dh)
 
+        # Creacion de matrices y fijacion de condiciones de borde
         self._matrix = np.ones((self._h, self._x))
         self._matrixTipos = np.zeros((self._h, self._x))
         self.fijarCondicionesBorde()
 
-        # Omega
-        self._omega = self.w_optimo()
-        print self._omega
+        # Omega (Si no es dado, calcula el optimo)
+        if omega == 0:
+            self._omega = self.w_optimo()
+        else:
+            self._omega = omega
 
-        self._rho = lambda x, y: 1 / math.sqrt(x ** 2 + y ** 2 + 120)
+        if usarRho:
+            self._rho = lambda x, y: 1 / math.sqrt(x ** 2 + y ** 2 + 120)
+        else:
+            self._rho = lambda x, y: 0
 
-    def plot(self):
-        """
-        Basado en codigo de Pablo Pizarro
-        Grafica
-        :return: None
-        """
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        # Se agrega grafico al plot
-        cax = ax.imshow(self._matrix, interpolation='none', vmax = 100)
-
-        # Invertir eje y (https://stackoverflow.com/questions/2051744/reverse-y-axis-in-pyplot)
-        plt.gca().invert_yaxis()
-
-        fig.colorbar(cax)
-        plt.show()
-
+    ################################################################
+    ##### GENERACION DE TERRENO
     def primeraColumna(self):
         i = 0
-        for j in range(0, self._h):
+        for j in range(self._alturaMar / self._dh, self._h):
             if 0 <= self._T <= 8:
                 self._matrix[j][i] = 4 - 6.0 * j * self._dh / 1000
 
             elif self._T in range(9, 17):
-                self._matrix[j][i] = 2 * self._T - 12 - 6.0 * j * self._dh/ 1000
+                self._matrix[j][i] = 2 * self._T - 12 - 6.0 * j * self._dh / 1000
 
             else:
                 self._matrix[j][i] = -2 * self._T + 52 - 6.0 * j * self._dh / 1000
@@ -99,7 +91,7 @@ class corte:
                 else:
                     self._matrix[j][i] = 450 * (math.cos(3.14 * self._T / 12) + 2)  #### CHIMENEAS
 
-        # Tramo 2, arriba: Aire; #abajo: Terreno;
+        # Pequenha subida
         for i in range(int(1550 / self._dh), int(1830 / self._dh)):
             for j in range(0, self._h):
                 if j * self._dh > 0.33 * i * self._dh - 514.82 + self._alturaMar:
@@ -108,7 +100,7 @@ class corte:
                 else:
                     self._matrix[j][i] = 20  #### SUELO
 
-        # Primera montana
+        # Primera montana: Subida
         for i in range(int(1830 / self._dh), int(2630 / self._dh)):
             for j in range(0, self._h):
                 if j * self._dh > 1.9 * i * self._dh - 3388.58 + self._alturaMar:
@@ -117,7 +109,7 @@ class corte:
                 else:
                     self._matrix[j][i] = 20  ##### SUELO
 
-        # Primera montana
+        # Primera montana: Bajada
         for i in range(int(2630. / self._dh), int(2930 / self._dh)):
             for j in range(0, self._h):
                 if j * self._dh > -0.67 * i * self._dh + 3368.33 + self._alturaMar:
@@ -126,7 +118,7 @@ class corte:
                 else:
                     self._matrix[j][i] = 20  ##### SUELO
 
-        # Segunda montana
+        # Segunda montana: Subida
         for i in range(int(2930 / self._dh), int(3430 / self._dh)):
             for j in range(0, self._h):
                 if j * self._dh > 0.99 * i * self._dh - 1471.05 + self._alturaMar:
@@ -138,7 +130,7 @@ class corte:
                     else:
                         self._matrix[j][i] = 20  ##### SUELO
 
-        # Segunda montana
+        # Segunda montana: Bajada
         for i in range(int(3430 / self._dh), int(4000 / self._dh)):
             for j in range(0, self._h):
                 if j * self._dh > -0.95 * i * self._dh + 0.95 * 3430 + 1909.5 + self._alturaMar:
@@ -150,71 +142,77 @@ class corte:
                     else:
                         self._matrix[j][i] = 20  ##### SUELO
 
-    def iterar(self):
-        maxR = 1009999999999999999999999999
-        while np.abs(maxR) > 0.01:
-            mat = np.copy(self._matrix)
-            maxRlocal = 0
-            for i in range(1, self._x - 1):
-                for j in range(1, self._h - 1):
-                    if self._matrixTipos[j][i] == -1:
-                        distPlantaX = np.abs(i * self._dh - 1490)
-                        distPlantaY = np.abs(j * self._dh - self._alturaMar)
-                        rho = self._rho(distPlantaX, distPlantaY)
+    ################################################################
+    ##### PLOTEO
+    def plot(self, matrix):
+        """
+        Basado en codigo de Pablo Pizarro
+        Grafica
+        :return: None
+        """
 
-                        r = 0.25 * (mat[j - 1][i] + mat[j + 1][i] + mat[j][i + 1] + mat[j][i - 1] + 4 * mat[j][i]) #- (self._dh ** 2) * rho )
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
 
-                        self._matrix[j][i] = mat[j][i] + self._omega * r
+        cfg = plt.gcf()
 
-                        maxRlocal = max(maxRlocal, r)
+        # Se agrega grafico al plot
+        cax = ax.imshow(matrix, interpolation='none', vmax=100)
 
-            maxR = min(maxR,maxRlocal)
-            print maxR
+        # Invertir eje y
+        plt.gca().invert_yaxis()
 
+        fig.colorbar(cax)
 
+        # Setear labels de ejes
+        plt.xlabel("Ancho [celdas]")
+        plt.ylabel("Altura [celdas]")
 
+        # Setear titulo
+        plt.title("Temperatura en t=" + str(int(self._T)))
+        cfg.canvas.set_window_title("Temperatura en t=" + str(int(self._T)))
+        plt.show()
 
-    """
-    def iterar(self):
-        for _ in tqdm.tqdm(range(1000)):
-            for i in range(1, self._x - 1):
-                for j in range(1, self._h - 1):
-                    if self._matrixTipos[j][i] == -1:
-                        self._matrix[j][i] = self._omega * 0.25 * (
-                                self._matrix[j - 1][i] + self._matrix[j + 1][i] + self._matrix[j][i + 1] +
-                                self._matrix[j][i - 1] - self._dh ** 2 * self._rho(np.abs(i * self._dh - 1490), np.abs(
-                            j * self._dh - self._alturaMar)))
-    """
+    def matrixZoom(self, rangoX, rangoY):
+        centroPlanta = 1490 / self._dh
+        rangoX = rangoX / self._dh
+        rangoY = rangoY / self._dh
 
-    def _single_iteration(self, matrix_new, matrix_old, omega):
+        startX = centroPlanta - rangoX
+        print startX
+        finishX = centroPlanta + rangoX
+        print finishX
+
+        startY = 0
+        finishY = rangoY
+
+        matrixZoom = np.zeros((rangoY, rangoX * 2))
+
+        for i in range(startX, finishX):
+            for j in range(startY, finishY):
+                matrixZoom[j][i - centroPlanta - rangoX] = self._matrix[j][i]
+
+        self.plot(matrixZoom)
+
+    ################################################################
+    ##### ITERACIONES: Codigo tomado del Auxiliar 3, de Pablo Pizarro
+    def _single_iteration(self, matrix_new, matrix_old, omega, usarRho=False):
         for x in range(1, self._x - 1):
             for y in range(self._h - 1):
                 # Valor anterior de la matriz promediado
                 prom = 0
                 # General
                 if self._matrixTipos[y][x] == -1:
-                    prom = 0.25 * (matrix_old[y - 1][x] + matrix_old[y + 1][x] + matrix_old[y][x - 1] +
-                                   matrix_old[y][x + 1] - 4 * matrix_old[y][x] - (self._dh ** 2) * self._rho(np.abs(x * self._dh - 1490), np.abs(
-                           y * self._dh - self._alturaMar)))
+                    rho = self._rho(np.abs(x * self._dh - 1490), np.abs(y * self._dh - self._alturaMar))
+                    abajo       = matrix_old[y - 1][x]
+                    arriba      = matrix_old[y + 1][x]
+                    izquierda   = matrix_old[y][x - 1]
+                    derecha     = matrix_old[y][x + 1]
+                    actual      = matrix_old[y][x]
+
+                    prom = 0.25 * (abajo + arriba + izquierda + derecha - 4 * actual - (self._dh ** 2) * rho)
 
                     matrix_new[y][x] = matrix_old[y][x] + prom * omega
-
-    """
-    #@staticmethod
-    def _convergio(self, mat_old, mat_new, tol):
-        not_zero = (mat_new != 0)
-        diff_relativa = np.zeros((self._h, self._x))
-        for x in range(1, self._x - 1):
-            for y in range(self._h - 1):
-                if self._matrixTipos[y][x] == -1:
-                    diff_relativa[y][x] = mat_old[y][x] - mat_new[y][x]
-                else:
-                    diff_relativa[y][x] = 0
-
-        max_diff = np.max(np.fabs(diff_relativa))
-        print max_diff
-        return [max_diff < tol, max_diff]
-    """
 
     @staticmethod
     def _convergio(mat_old, mat_new, tol):
@@ -223,7 +221,7 @@ class corte:
         max_diff = np.max(np.fabs(diff_relativa))
         return [max_diff < tol, max_diff]
 
-    def start(self, omega):
+    def start(self):
         # Clonamos las matrices
         mat_new = np.copy(self._matrix)
 
@@ -231,7 +229,7 @@ class corte:
         niters = 0
         run = True
         converg = []
-        omega = omega - 1
+        omega = self._omega - 1
         if not 0 <= omega <= 1:
             raise Exception('Omega tiene un valor incorrecto')
 
@@ -256,9 +254,4 @@ class corte:
             return 4 / (2 + (math.sqrt(4 - (math.cos(math.pi / (n - 1)) + math.cos(math.pi / (m - 1))) ** 2)))
 
         return createw(self._x, self._h)
-
-
-c = corte(20, 0)
-#c.iterar()
-c.start(c._omega)
-c.plot()
+    ################################################################
