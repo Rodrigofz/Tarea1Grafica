@@ -2,4 +2,3 @@
 Modelo temperatura emitida por planta
 
 TODO:  
--Arreglar iteración
