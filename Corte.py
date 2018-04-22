@@ -4,7 +4,6 @@
 """
 
 import matplotlib.pyplot as plt
-import tqdm
 import numpy as np
 import math
 
@@ -144,7 +143,7 @@ class Corte:
 
     ################################################################
     ##### PLOTEO
-    def plot(self, matrix):
+    def plot(self):
         """
         Basado en codigo de Pablo Pizarro
         Grafica
@@ -157,7 +156,7 @@ class Corte:
         cfg = plt.gcf()
 
         # Se agrega grafico al plot
-        cax = ax.imshow(matrix, interpolation='none', vmax=100)
+        cax = ax.imshow(self._matrix, interpolation='none', vmax=100)
 
         # Invertir eje y
         plt.gca().invert_yaxis()
@@ -172,27 +171,6 @@ class Corte:
         plt.title("Temperatura en t=" + str(int(self._T)))
         cfg.canvas.set_window_title("Temperatura en t=" + str(int(self._T)))
         plt.show()
-
-    def matrixZoom(self, rangoX, rangoY):
-        centroPlanta = 1490 / self._dh
-        rangoX = rangoX / self._dh
-        rangoY = rangoY / self._dh
-
-        startX = centroPlanta - rangoX
-        print startX
-        finishX = centroPlanta + rangoX
-        print finishX
-
-        startY = 0
-        finishY = rangoY
-
-        matrixZoom = np.zeros((rangoY, rangoX * 2))
-
-        for i in range(startX, finishX):
-            for j in range(startY, finishY):
-                matrixZoom[j][i - centroPlanta - rangoX] = self._matrix[j][i]
-
-        self.plot(matrixZoom)
 
     ################################################################
     ##### ITERACIONES: Codigo tomado del Auxiliar 3, de Pablo Pizarro
