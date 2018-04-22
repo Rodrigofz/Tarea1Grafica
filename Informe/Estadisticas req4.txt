@@ -1,0 +1,10 @@
+Tiempo: 0, Omega: 1.95293698791
+El programa termino en 635 iteraciones, con error 0.0999624528022
+Tiempo: 8, Omega: 1.95293698791
+El programa termino en 845 iteraciones, con error 0.0999745638275
+Tiempo: 12, Omega: 1.95293698791
+El programa termino en 944 iteraciones, con error 0.099979959324
+Tiempo: 16, Omega: 1.95293698791
+El programa termino en 886 iteraciones, con error 0.0999976991631
+Tiempo: 20, Omega: 1.95293698791
+El programa termino en 711 iteraciones, con error 0.0999802542604

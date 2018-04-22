@@ -1,0 +1,18 @@
+Tiempo: 0
+El programa termino en 531 iteraciones, con error 0.0998428701307
+Tiempo: 8
+El programa termino en 345 iteraciones, con error 0.0996830967429
+Tiempo: 12, Omega: 1.2
+El programa termino en 419 iteraciones, con error 0.09974635446
+Tiempo: 12, Omega: 1.4
+El programa termino en 338 iteraciones, con error 0.0996710823834
+Tiempo: 12, Omega: 1.6
+El programa termino en 296 iteraciones, con error 0.0999879862038
+Tiempo: 12, Omega: 1.8
+El programa termino en 271 iteraciones, con error 0.099494028207
+Tiempo: 12, Omega: 0
+El programa termino en 256 iteraciones, con error 0.0997693681516
+Tiempo: 16
+El programa termino en 323 iteraciones, con error 0.0997395426455
+Tiempo: 20
+El programa termino en 463 iteraciones, con error 0.0999982809158
